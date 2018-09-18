@@ -14,7 +14,8 @@ PUBLIC METHODS
 
 """
 
-def midi_to_matrix(file, min_size, channels=[10]):
+''' convert a midi_file to a matrix'''
+def midi_to_matrix(file, min_size=1):
 	# make note stream and then create into matrix
 	midi_data = pretty_midi.PrettyMIDI(file)
 	notes = []
@@ -28,8 +29,6 @@ def midi_to_matrix(file, min_size, channels=[10]):
 
 	d = 15.1 / midi_data.estimate_tempo()
 	length = ceil(midi_data.get_end_time() / d)
-
-	# print('length', length)
 
 	if length < min_size:
 		return []
@@ -51,7 +50,8 @@ def midi_to_matrix(file, min_size, channels=[10]):
 		
 	return M
 
-def matrix_to_midi(matrix, file_name, output):
+''' write a matrix to a midi file'''
+def matrix_to_midi(matrix, file_name='output', output_path='./'):
 
 	song = _matrix_to_stream(matrix)
 
@@ -60,16 +60,16 @@ def matrix_to_midi(matrix, file_name, output):
 	# write to a midi file
 	midi_file = midi.translate.streamToMidiFile(song)
 
-	if output[-1] != '/':
-		output += '/'
+	if output_path[-1] != '/':
+		output_path += '/'
 
-	midi_file.open(output + file_name + '.mid', 'wb')
+	midi_file.open(output_path + file_name + '.mid', 'wb')
 	midi_file.write()
 	midi_file.close()
 
 	print('[Success][Midi Process] Output midi file for', file_name, 'to', output)
 
-
+''' extract percussion and write it to a separate midi file'''
 def extract_percussion(file):
 	mat = midi_to_matrix(file, 1)
 	if not len(mat):

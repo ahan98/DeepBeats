@@ -13,8 +13,23 @@ _LOOK_BACK_SIZE = 20
 PUBLIC METHODS
 '''
 
-''' make a corpus from a directory of n midi files with a given look_back '''
-def make_corpus(dir_, look_back=20, n=sys.maxsize, channels=[10]):
+''' make a corpus from a directory and save it '''
+def make_corpus(dir_, save_path='./', look_back=20, channels=[10]):
+	if not os.path.exists(dir_):
+		raise Exception('The path to training data \'' + dir_ + '\' does not exist')
+
+	if dir_[-1] != '/':
+		dir_ += '/'
+
+	patterns = 0
+	for file_name in glob.glob(dir_ + '*.mid'):
+		make_training_data(file_name, save_path=save_path, look_back=look_back, partition_mat=True, write_to_file=True, channels=channels)
+		patterns += 1
+
+	print('[Success][Make Corpus] Corpus with', patterns, 'samples generated')
+
+''' make a corpus from a directory of n midi files with a given look_back and return it, for quick testing only '''
+def pipe_corpus(dir_, look_back=20, n=sys.maxsize, channels=[10]):
     if not os.path.exists(dir_):
         raise Exception('The path to training data \'' + dir_ + '\' does not exist')
 
@@ -163,14 +178,9 @@ OPTIONAL:
 '''
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
-	parser.add_argument('midi_file', help='path to the target midi file', action='store')
-	parser.add_argument('-o', '--out', help='output path', default='./', action='store')
+	parser.add_argument('files', help='path to the target midi file', action='store')
+	parser.add_argument('out', help='output path', default='./', action='store')
 	parser.add_argument('-w', '--window', help='look back size for generating training data', type=int, default=_LOOK_BACK_SIZE)
-	parser.add_argument('-s', '--savemat', help='save as a matrix instead of training data', action='store_false', default=True)
-	args = parser.parse_args()	
+	args = parser.parse_args()
 
-	if '.mid' not in args.midi_file:
-		args.midi_file += '.mid'
-
-	make_training_data(midi_file=args.midi_file, save_path=args.out, look_back=args.window, partition_mat=args.savemat)
-	
+	make_corpus(args.files, args.out, args.window)
