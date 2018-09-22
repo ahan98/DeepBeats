@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import argparse
 import glob
+import time
 from collections import deque
 from midi_processing import midi_to_matrix, FEATURE_SIZE
 
@@ -14,22 +15,27 @@ PUBLIC METHODS
 '''
 
 ''' make a corpus from a directory and save it '''
-def make_corpus(dir_, save_path='./', look_back=20, channels=[10]):
+def make_corpus(dir_, save_path='./', look_back=20):
 	if not os.path.exists(dir_):
 		raise Exception('The path to training data \'' + dir_ + '\' does not exist')
+
+	begin = time.time()
 
 	if dir_[-1] != '/':
 		dir_ += '/'
 
 	patterns = 0
-	for file_name in glob.glob(dir_ + '*.mid'):
-		make_training_data(file_name, save_path=save_path, look_back=look_back, partition_mat=True, write_to_file=True, channels=channels)
+	for file_name in glob.glob(dir_ + '/**/*.mid', recursive=True):
+		make_training_data(file_name, save_path=save_path, look_back=look_back, partition_mat=True, write_to_file=True)
 		patterns += 1
 
-	print('[Success][Make Corpus] Corpus with', patterns, 'samples generated')
+	print('\n')
+	print('-' * 40)
+	print('[Preprocess][Success] Corpus with', patterns, 'samples generated in', time.strftime("%H:%M:%S", time.gmtime(time.time() - begin)))
+	print('-' * 40)
 
 ''' make a corpus from a directory of n midi files with a given look_back and return it, for quick testing only '''
-def pipe_corpus(dir_, look_back=20, n=sys.maxsize, channels=[10]):
+def pipe_corpus(dir_, look_back=20, n=sys.maxsize):
     if not os.path.exists(dir_):
         raise Exception('The path to training data \'' + dir_ + '\' does not exist')
 
@@ -42,7 +48,7 @@ def pipe_corpus(dir_, look_back=20, n=sys.maxsize, channels=[10]):
 
     samples = 0
     for file_name in glob.glob(dir_ + '*.mid'):
-        x, y = make_training_data(file_name, look_back=look_back, partition_mat=True, write_to_file=False, channels=channels)
+        x, y = make_training_data(file_name, look_back=look_back, partition_mat=True, write_to_file=False)
 
         if not len(x):
             continue
@@ -78,17 +84,17 @@ def load_corpus(dir_, look_back=20):
                 X = np.concatenate((X, x), axis=0)
                 Y = np.concatenate((Y, y), axis=0)
             except:
-                print('[Error][Load Corpus] Could not load file at', folder_path)
+                print('[Load Corpus][Error] Could not load file at', folder_path)
 
     return np.reshape(X, (patterns, look_back, FEATURE_SIZE)), np.reshape(Y, (patterns, FEATURE_SIZE))
 
 ''' given a midi file, return or save the sequence and labels '''
-def make_training_data(midi_file, save_path='./', look_back=_LOOK_BACK_SIZE, partition_mat=True, write_to_file=True, channels=[10]):
+def make_training_data(midi_file, save_path='./', look_back=_LOOK_BACK_SIZE, partition_mat=True, write_to_file=True):
 	# convert to a matrix
-	M = midi_to_matrix(midi_file, look_back, channels)
+	M = midi_to_matrix(midi_file, look_back)
 
 	if not len(M):
-		print('[Error][Preprocess] Song too short')
+		print('[Preprocess][Error] Song too short')
 		return [], []
 
 	name = os.path.splitext(os.path.basename(midi_file))[0]
@@ -122,13 +128,13 @@ def make_training_data(midi_file, save_path='./', look_back=_LOOK_BACK_SIZE, par
 		if write_to_file:
 			np.save(out + 'data', X)
 			np.save(out + 'labels', Y)
-			print('[Success][Preprocess] Output training data for', name)
+			print('[Preprocess][Success] Output training data for', name)
 		
 		return X, Y
 	else:
 		if write_to_file:
 			np.save(out + 'matrix', M)
-			print('[Success][Preprocess] Output matrix for', name)
+			print('[Preprocess][Success] Output matrix for', name)
 
 		return M, []
 
@@ -139,7 +145,7 @@ PRIVATE METHODS
 ''' generate sequences and labels '''
 def _make_tuples(matrix, look_back, out):
 	if look_back >= len(matrix):
-		print('[Error][Preprocess] look back of', look_back, 'too large for song of length', len(matrix))
+		print('[Preprocess][Error] look back of', look_back, 'too large for song of length', len(matrix))
 		return [], []
 
 	X = []
@@ -178,8 +184,8 @@ OPTIONAL:
 '''
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
-	parser.add_argument('files', help='path to the target midi file', action='store')
-	parser.add_argument('out', help='output path', default='./', action='store')
+	parser.add_argument('<files>', help='path to the target midi file', action='store')
+	parser.add_argument('<out>', help='output path', default='./', action='store')
 	parser.add_argument('-w', '--window', help='look back size for generating training data', type=int, default=_LOOK_BACK_SIZE)
 	args = parser.parse_args()
 

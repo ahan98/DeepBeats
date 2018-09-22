@@ -1,7 +1,15 @@
 '''
 Train that model
 '''
+import argparse
 from preprocess import load_corpus
+from midi_processing import FEATURE_SIZE
+import os
+from keras.models import Sequential
+from keras.layers.core import Dense, Activation, Dropout
+from keras.layers.recurrent import LSTM
+from keras.callbacks import ModelCheckpoint
+import numpy as np
 
 _OUT_DIR = './models/'
 
@@ -24,20 +32,25 @@ def train_model(path, name, look_back, epochs):
 	if path[-1] != '/':
 		path += '/'
 
-	print('Constructing training data...')
+	print('Loading training data...')
 
 	X, Y = load_corpus(path, look_back)
 
 	X = np.array(X)
 	Y = np.array(Y)
 
-	print('Corpus constructed with shape:',np.shape(X),'\nStarting training...')
+	print('Corpus loaded with shape:',np.shape(X),'\nStarting training...')
 
 	model = make_model(look_back)
-	model.fit(X, Y, epochs=epochs, batch_size=FEATURE_SIZE, verbose=1)
 
 	if not os.path.exists(_OUT_DIR):
 		os.mkdir(_OUT_DIR)
+
+	if not os.path.exists(_OUT_DIR + 'checkpoints/'):
+		os.mkdir(_OUT_DIR + 'checkpoints/')
+
+	checkpointer = ModelCheckpoint(filepath=_OUT_DIR + 'checkpoints/' + name + '.hdf5', verbose=1, save_best_only=False)
+	model.fit(X, Y, epochs=epochs, batch_size=FEATURE_SIZE, verbose=1, callbacks=[checkpointer])
 
 	model.save(_OUT_DIR + name + '.h5')
 
@@ -57,9 +70,9 @@ OPTIONAL:
 '''
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
-	parser.add_argument('training', help='path to the training data', action='store')
-	parser.add_argument('lookback', help='sequence length', type=int, action='store')
-	parser.add_argument('-n', '--name', help='name of the output file', type=str, default='model')
+	parser.add_argument('<training>', help='path to the training data', action='store')
+	parser.add_argument('<lookback>', help='sequence length', type=int, action='store')
+	parser.add_argument('-n', '--name', help='name of the output file', default='model')
 	parser.add_argument('-e', '--epochs', help='training epochs', type=int, default=120)
 	args = parser.parse_args()
 

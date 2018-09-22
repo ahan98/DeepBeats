@@ -8,6 +8,8 @@ import pretty_midi
 global FEATURE_SIZE
 FEATURE_SIZE = 128
 
+_DENSITY_THRESHOLD = 5
+
 """
 
 PUBLIC METHODS
@@ -26,6 +28,8 @@ def midi_to_matrix(file, min_size=1):
 
 	if not len(notes):
 		return []
+	elif len(notes) / midi_data.get_end_time() < _DENSITY_THRESHOLD:
+		print('[Preprocess][Error] Beat density of', len(notes) / midi_data.get_end_time(), 'too small')
 
 	d = 15.1 / midi_data.estimate_tempo()
 	length = ceil(midi_data.get_end_time() / d)
@@ -67,7 +71,7 @@ def matrix_to_midi(matrix, file_name='output', output_path='./'):
 	midi_file.write()
 	midi_file.close()
 
-	print('[Success][Midi Process] Output midi file for', file_name, 'to', output)
+	print('[Midi Process][Output] Midi file for', file_name, 'to', output)
 
 ''' extract percussion and write it to a separate midi file'''
 def extract_percussion(file):
@@ -117,6 +121,5 @@ def _matrix_to_stream(matrix):
 	return song
 
 if __name__ == '__main__':
-	extract_percussion('./sample_tracks/bongos.mid')
-	# print(np.shape(mat))
+	extract_percussion(sys.argv[1])
 
