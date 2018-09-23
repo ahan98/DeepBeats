@@ -1,5 +1,5 @@
 # DeepBeats
-Deep learning for music generation using MIDI.
+A deep learning model that uses MIDI files to generate music of a similar genre.
 
 ## Introduction
 _DeepBeats_ is a deep LSTM trained on thousands of MIDI files with a custom encoding scheme. It was made in 24 hours at the HackMIT hackathon.
