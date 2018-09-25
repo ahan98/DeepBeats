@@ -14,8 +14,8 @@ _LOOK_BACK_SIZE = 20
 PUBLIC METHODS
 '''
 
-''' make a corpus from a directory and save it '''
-def make_corpus(dir_, save_path='./', look_back=20):
+''' make a corpus from a directory of midi files and save it '''
+def make_corpus(dir_, save_path='./', look_back=_LOOK_BACK_SIZE):
 	if not os.path.exists(dir_):
 		raise Exception('The path to training data \'' + dir_ + '\' does not exist')
 
@@ -26,8 +26,11 @@ def make_corpus(dir_, save_path='./', look_back=20):
 
 	patterns = 0
 	for file_name in glob.glob(dir_ + '/**/*.mid', recursive=True):
-		make_training_data(file_name, save_path=save_path, look_back=look_back, partition_mat=True, write_to_file=True)
-		patterns += 1
+		try:
+			make_training_data(file_name, save_path=save_path, look_back=look_back, partition_mat=True, write_to_file=True)
+			patterns += 1
+		except:
+			print('[Preprocess][Error] An error occurred processing', file_name)
 
 	print('\n')
 	print('-' * 40)
@@ -35,7 +38,7 @@ def make_corpus(dir_, save_path='./', look_back=20):
 	print('-' * 40)
 
 ''' make a corpus from a directory of n midi files with a given look_back and return it, for quick testing only '''
-def pipe_corpus(dir_, look_back=20, n=sys.maxsize):
+def pipe_corpus(dir_, look_back=_LOOK_BACK_SIZE, n=sys.maxsize):
     if not os.path.exists(dir_):
         raise Exception('The path to training data \'' + dir_ + '\' does not exist')
 
@@ -67,7 +70,7 @@ def pipe_corpus(dir_, look_back=20, n=sys.maxsize):
     return X, Y
 
 ''' load a saved corpus from a directory with a given look_back '''
-def load_corpus(dir_, look_back=20):
+def load_corpus(dir_, look_back=_LOOK_BACK_SIZE):
     if not os.path.exists(dir_):
         raise Exception('The path to training data \'' + dir_ + '\' does not exist')
 
@@ -184,8 +187,8 @@ OPTIONAL:
 '''
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
-	parser.add_argument('<files>', help='path to the target midi file', action='store')
-	parser.add_argument('<out>', help='output path', default='./', action='store')
+	parser.add_argument('files', help='path to the target midi file', action='store')
+	parser.add_argument('out', help='output path', default='./', action='store')
 	parser.add_argument('-w', '--window', help='look back size for generating training data', type=int, default=_LOOK_BACK_SIZE)
 	args = parser.parse_args()
 
