@@ -24,8 +24,10 @@ def make_corpus(dir_, save_path='./', look_back=_LOOK_BACK_SIZE):
 	if dir_[-1] != '/':
 		dir_ += '/'
 
+	total = 0
 	patterns = 0
 	for file_name in glob.glob(dir_ + '/**/*.mid', recursive=True):
+		total += 1
 		try:
 			make_training_data(file_name, save_path=save_path, look_back=look_back, partition_mat=True, write_to_file=True)
 			patterns += 1
@@ -35,6 +37,7 @@ def make_corpus(dir_, save_path='./', look_back=_LOOK_BACK_SIZE):
 	print('\n')
 	print('-' * 40)
 	print('[Preprocess][Success] Corpus with', patterns, 'samples generated in', time.strftime("%H:%M:%S", time.gmtime(time.time() - begin)))
+	print('[Preprocess] Discarded', total - patterns, 'midi files')
 	print('-' * 40)
 
 ''' make a corpus from a directory of n midi files with a given look_back and return it, for quick testing only '''
