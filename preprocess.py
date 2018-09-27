@@ -53,7 +53,7 @@ def pipe_corpus(dir_, look_back=_LOOK_BACK_SIZE, n=sys.maxsize):
     patterns = 0
 
     samples = 0
-    for file_name in glob.glob(dir_ + '*.mid'):
+    for file_name in glob.glob(dir_ + '/**/*.mid', recursive=True):
         x, y = make_training_data(file_name, look_back=look_back, partition_mat=True, write_to_file=False)
 
         if not len(x):
