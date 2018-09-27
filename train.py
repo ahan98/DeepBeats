@@ -70,8 +70,8 @@ OPTIONAL:
 '''
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
-	parser.add_argument('<training>', help='path to the training data', action='store')
-	parser.add_argument('<lookback>', help='sequence length', type=int, action='store')
+	parser.add_argument('training', help='path to the training data', action='store')
+	parser.add_argument('lookback', help='sequence length', type=int, action='store')
 	parser.add_argument('-n', '--name', help='name of the output file', default='model')
 	parser.add_argument('-e', '--epochs', help='training epochs', type=int, default=120)
 	args = parser.parse_args()
