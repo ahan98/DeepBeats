@@ -10,9 +10,9 @@ from midi_processing import midi_to_matrix, FEATURE_SIZE
 _OUTPUT_PATH = 'processed_data'
 _LOOK_BACK_SIZE = 20
 
-'''
+"""
 PUBLIC METHODS
-'''
+"""
 
 ''' make a corpus from a directory of midi files and save it '''
 def make_corpus(dir_, save_path='./', look_back=_LOOK_BACK_SIZE):
@@ -89,6 +89,8 @@ def load_corpus(dir_, look_back=_LOOK_BACK_SIZE):
                 patterns += len(x)
                 X = np.concatenate((X, x), axis=0)
                 Y = np.concatenate((Y, y), axis=0)
+
+                print('[Load Corpus] Loaded', folder_path)
             except:
                 print('[Load Corpus][Error] Could not load file at', folder_path)
 
@@ -144,9 +146,9 @@ def make_training_data(midi_file, save_path='./', look_back=_LOOK_BACK_SIZE, par
 
 		return M, []
 
-'''
+"""
 PRIVATE METHODS
-'''	
+"""
 
 ''' generate sequences and labels '''
 def _make_tuples(matrix, look_back, out):

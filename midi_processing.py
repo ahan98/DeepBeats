@@ -1,7 +1,7 @@
 import sys
 import os
 import numpy as np
-from music21 import *
+# from music21 import *
 from math import ceil
 import pretty_midi
 
@@ -56,22 +56,20 @@ def midi_to_matrix(file, min_size=1):
 
 ''' write a matrix to a midi file'''
 def matrix_to_midi(matrix, file_name='output', output_path='./'):
+	instr = pretty_midi.Instrument(0, True, name='beat')
+	midi = pretty_midi.PrettyMIDI()
+	song = _matrix_to_notes(matrix)
 
-	song = _matrix_to_stream(matrix)
-
-	# song.show('text')
-
-	# write to a midi file
-	midi_file = midi.translate.streamToMidiFile(song)
+	instr.notes = song
+	midi.instruments = [instr]
+	midi.time_signature_changes.append(pretty_midi.TimeSignature(4,4,0.0))
 
 	if output_path[-1] != '/':
 		output_path += '/'
 
-	midi_file.open(output_path + file_name + '.mid', 'wb')
-	midi_file.write()
-	midi_file.close()
+	# midi.write(output_path + file_name + '.mid')
 
-	print('[Midi Process][Output] Midi file for', file_name, 'to', output)
+	print('[Midi Process][Output] Midi file for', file_name, 'to', output_path)
 
 ''' extract percussion and write it to a separate midi file'''
 def extract_percussion(file):
@@ -88,37 +86,36 @@ PRIVATE METHODS
 
 """
 
-def _matrix_to_stream(matrix):
+def _matrix_to_notes(matrix):
 	matrix = np.concatenate((matrix, np.zeros((1, FEATURE_SIZE))), axis=0)
 
 	time_count = 0.0
-	step_size = float(16)
+	step_size = 1 / float(16)
 	notes_on = {}
-	song = stream.Stream()
+	
+	notes = []
 
 	for frame in matrix:
 		# for each note in the matrix at frame x
 		for i in np.nonzero(frame)[0]:
 			if not i in notes_on:
-				notes_on[i] = 1
+				notes_on[i] = 0.0
 			else:
-				notes_on[i] += 1
+				notes_on[i] += step_size
 
 		# for each note that is
 		for i in list(notes_on.keys()):
 			# note ended
 			if not frame[i]:
-				new_note = note.Note()
-				new_note.pitch.ps = float(i)
-				new_note.quarterLength = notes_on[i] / step_size
-				new_note.offset = (time_count - notes_on[i]) / step_size
-				song.append(new_note)
+				new_note = pretty_midi.Note(50, i, time_count - notes_on[i], time_count)
+				notes.append(new_note)
 
 				del notes_on[i]
 
-		time_count += 1.0
+		time_count += step_size
 
-	return song
+	print(len(notes))
+	return notes
 
 if __name__ == '__main__':
 	extract_percussion(sys.argv[1])

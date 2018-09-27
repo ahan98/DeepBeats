@@ -1,11 +1,8 @@
 # DeepBeats
-A deep learning model that uses MIDI files to generate music of a similar genre.
-
-## Introduction
 _DeepBeats_ is a deep LSTM trained on thousands of MIDI files with a custom encoding scheme. It was made in 24 hours at the HackMIT hackathon.
 
 ## Encoding Scheme
-We use the music21 and pretty_midi libraries to convert each MIDI file into a binary matrix Nx128 where N is the length of the song in sixteenth notes. We then segment the matrix with a `look_back` parameter for training the LSTM on sequential data. Our preprocess step can be run with 
+We use the music21 and pretty_midi libraries to convert each MIDI file into a binary matrix _N_ x128 where _N_ is the length of the song in sixteenths. We then segment the matrix with a `look_back` parameter for training the LSTM on sequential data. Our preprocess step can be run with 
 
 `python3 preprocess.py <path_to_midi_files> <output_dir> -w <look_back_window>`
 
@@ -13,8 +10,8 @@ and outputs a corpus of data and associated labels for training per song. Additi
 
 ## Training
 
-We use the Keras library with tensorflow backend to train a three layer LSTM. The model accepts a vector of size 128 as input and outputs a similar vector of 128 with distinct probabilities for each note (using a sigmoid activation). More detail can be found in `train.py`. The training step can be run with
+We use the Keras library with tensorflow backend to train a three layer LSTM. The model accepts a vector of size 128 as input and outputs a vector of the same size with distinct probabilities for each note (using a sigmoid activation) indicating whether that note should be _on_ or not. More detail can be found in `train.py`. The training step can be run with
 
-`python3 train.py <path_to_processed_data> <look_back_window> -n <model_name> -e <epochs>`
+`python3 train.py <path_to_processed_data> <look_back_window> -n <output_file_name> -e <epochs>`
 
 
