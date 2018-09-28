@@ -74,9 +74,6 @@ def pipe_corpus(dir_, look_back=_LOOK_BACK_SIZE, n=sys.maxsize):
 
 ''' load a saved corpus from a directory with a given look_back '''
 def load_corpus(dir_, look_back=_LOOK_BACK_SIZE):
-    if dir_[-1] != '/':
-        dir_ += '/'
-	
     if not os.path.exists(dir_):
         raise Exception('The path to training data \'' + dir_ + '\' does not exist')
 
