@@ -1,6 +1,7 @@
 '''
 Train that model
 '''
+import sys
 import argparse
 from preprocess import load_corpus
 from midi_processing import FEATURE_SIZE
@@ -28,13 +29,13 @@ def make_model(look_back):
 
 	return model
 
-def train_model(path, name, look_back, epochs):
+def train_model(path, name, look_back, epochs, cap):
 	if path[-1] != '/':
 		path += '/'
 
 	print('Loading training data...')
 
-	X, Y = load_corpus(path, look_back)
+	X, Y = load_corpus(path, look_back, cap)
 
 	X = np.array(X)
 	Y = np.array(Y)
@@ -74,6 +75,7 @@ if __name__ == '__main__':
 	parser.add_argument('lookback', help='sequence length', type=int, action='store')
 	parser.add_argument('-n', '--name', help='name of the output file', default='model')
 	parser.add_argument('-e', '--epochs', help='training epochs', type=int, default=120)
+	parser.add_argument('-c', '--capacity', help='capacity of the corpus to load', type=int, default=sys.maxsize)
 	args = parser.parse_args()
 
-	train_model(args.training, args.name, args.lookback, args.epochs)
+	train_model(args.training, args.name, args.lookback, args.epochs, args.capacity)

@@ -73,12 +73,13 @@ def pipe_corpus(dir_, look_back=_LOOK_BACK_SIZE, n=sys.maxsize):
     return X, Y
 
 ''' load a saved corpus from a directory with a given look_back '''
-def load_corpus(dir_, look_back=_LOOK_BACK_SIZE):
+def load_corpus(dir_, look_back=_LOOK_BACK_SIZE, n=sys.maxsize):
     if not os.path.exists(dir_):
         raise Exception('The path to training data \'' + dir_ + '\' does not exist')
 
     X, Y = np.zeros((0,look_back, FEATURE_SIZE), dtype=np.bool), np.zeros((0, FEATURE_SIZE), dtype=np.bool)
     patterns = 0
+    samples = 0
     for file_name in os.listdir(dir_):
         folder_path = dir_ + '/' + file_name
         if os.path.isdir(folder_path):
@@ -89,6 +90,10 @@ def load_corpus(dir_, look_back=_LOOK_BACK_SIZE):
                 patterns += len(x)
                 X = np.concatenate((X, x), axis=0)
                 Y = np.concatenate((Y, y), axis=0)
+
+                samples += 1
+                if samples >= n:
+                	break
 
                 print('[Load Corpus] Loaded', folder_path)
             except:
