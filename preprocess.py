@@ -42,64 +42,64 @@ def make_corpus(dir_, save_path='./', look_back=_LOOK_BACK_SIZE):
 
 ''' make a corpus from a directory of n midi files with a given look_back and return it, for quick testing only '''
 def pipe_corpus(dir_, look_back=_LOOK_BACK_SIZE, n=sys.maxsize):
-    if not os.path.exists(dir_):
-        raise Exception('The path to training data \'' + dir_ + '\' does not exist')
+	if not os.path.exists(dir_):
+		raise Exception('The path to training data \'' + dir_ + '\' does not exist')
 
-    if dir_[-1] != '/':
-        dir_ += '/'
+	if dir_[-1] != '/':
+		dir_ += '/'
 
-    # initialize X to be an array of look_back arrays where look_back arrays are FEATURE_SIZE tall
-    X, Y = np.zeros((0,look_back, FEATURE_SIZE), dtype=np.bool), np.zeros((0,FEATURE_SIZE), dtype=np.bool)
-    patterns = 0
+	# initialize X to be an array of look_back arrays where look_back arrays are FEATURE_SIZE tall
+	X, Y = np.zeros((0,look_back, FEATURE_SIZE), dtype=np.bool), np.zeros((0,FEATURE_SIZE), dtype=np.bool)
+	patterns = 0
 
-    samples = 0
-    for file_name in glob.glob(dir_ + '/**/*.mid', recursive=True):
-        x, y = make_training_data(file_name, look_back=look_back, partition_mat=True, write_to_file=False)
+	samples = 0
+	for file_name in glob.glob(dir_ + '/**/*.mid', recursive=True):
+		x, y = make_training_data(file_name, look_back=look_back, partition_mat=True, write_to_file=False)
 
-        if not len(x):
-            continue
+		if not len(x):
+			continue
 
-        patterns += len(x)
-        X = np.concatenate((X, x), axis=0)
-        Y = np.concatenate((Y, y), axis=0)
+		patterns += len(x)
+		X = np.concatenate((X, x), axis=0)
+		Y = np.concatenate((Y, y), axis=0)
 
-        samples += 1
-        if samples >= n:
-            break
+		samples += 1
+		if samples >= n:
+			break
 
-    X = np.reshape(X, (patterns, look_back, FEATURE_SIZE))
-    Y = np.reshape(Y, (patterns, FEATURE_SIZE))
+	X = np.reshape(X, (patterns, look_back, FEATURE_SIZE))
+	Y = np.reshape(Y, (patterns, FEATURE_SIZE))
 
-    return X, Y
+	return X, Y
 
 ''' load a saved corpus from a directory with a given look_back '''
 def load_corpus(dir_, look_back=_LOOK_BACK_SIZE, n=sys.maxsize):
 	if not os.path.exists(dir_):
-        raise Exception('The path to training data \'' + dir_ + '\' does not exist')
+		raise Exception('The path to training data \'' + dir_ + '\' does not exist')
 
-    X, Y = np.zeros((0,look_back, FEATURE_SIZE), dtype=np.bool), np.zeros((0, FEATURE_SIZE), dtype=np.bool)
-    patterns = 0
-    samples = 0
-    for file_name in os.listdir(dir_):
-        folder_path = dir_ + file_name
-        if os.path.isdir(folder_path):
-            try:
-                x = np.load(folder_path + '/data.npy')
-                y = np.load(folder_path + '/labels.npy')
+	X, Y = np.zeros((0,look_back, FEATURE_SIZE), dtype=np.bool), np.zeros((0, FEATURE_SIZE), dtype=np.bool)
+	patterns = 0
+	samples = 0
+	for file_name in os.listdir(dir_):
+		folder_path = dir_ + file_name
+		if os.path.isdir(folder_path):
+			try:
+				x = np.load(folder_path + '/data.npy')
+				y = np.load(folder_path + '/labels.npy')
 
-                patterns += len(x)
-                X = np.concatenate((X, x), axis=0)
-                Y = np.concatenate((Y, y), axis=0)
+				patterns += len(x)
+				X = np.concatenate((X, x), axis=0)
+				Y = np.concatenate((Y, y), axis=0)
 
-                samples += 1
-                if samples >= n:
-                	break
+				samples += 1
+				if samples >= n:
+					break
 
-                print('[Load Corpus] Loaded', folder_path)
-            except:
-                print('[Load Corpus][Error] Could not load file at', folder_path)
+				print('[Load Corpus] Loaded', folder_path)
+			except:
+				print('[Load Corpus][Error] Could not load file at', folder_path)
 
-    return np.reshape(X, (patterns, look_back, FEATURE_SIZE)), np.reshape(Y, (patterns, FEATURE_SIZE))
+	return np.reshape(X, (patterns, look_back, FEATURE_SIZE)), np.reshape(Y, (patterns, FEATURE_SIZE))
 
 ''' given a midi file, return or save the sequence and labels '''
 def make_training_data(midi_file, save_path='./', look_back=_LOOK_BACK_SIZE, partition_mat=True, write_to_file=True):

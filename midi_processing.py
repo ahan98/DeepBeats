@@ -114,7 +114,7 @@ def _matrix_to_notes(matrix):
 
 		time_count += step_size
 
-	print(len(notes))
+	print(notes)
 	return notes
 
 if __name__ == '__main__':
