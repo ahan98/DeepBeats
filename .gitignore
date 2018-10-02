@@ -113,3 +113,4 @@ dmypy.json
 .DS_Store
 .idea/
 processed_data/
+models/
