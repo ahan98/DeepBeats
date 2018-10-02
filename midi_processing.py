@@ -2,7 +2,7 @@ import sys
 import os
 import numpy as np
 # from music21 import *
-from math import ceil
+from math import ceil, floor
 import pretty_midi
 
 global FEATURE_SIZE
@@ -16,10 +16,13 @@ PUBLIC METHODS
 
 """
 
-''' convert a midi_file to a matrix'''
 def midi_to_matrix(file, min_size=1):
-	# make note stream and then create into matrix
 	midi_data = pretty_midi.PrettyMIDI(file)
+	return stream_to_matrix(midi_data, min_size)
+
+''' convert a midi_file to a matrix'''
+def stream_to_matrix(midi_data, min_size=1):
+	# make note stream and then create into matrix
 	notes = []
 	for instr in midi_data.instruments:
 		if instr.is_drum:
@@ -31,7 +34,7 @@ def midi_to_matrix(file, min_size=1):
 	elif len(notes) / midi_data.get_end_time() < _DENSITY_THRESHOLD:
 		print('[Preprocess][Error] Beat density of', len(notes) / midi_data.get_end_time(), 'too small')
 
-	d = 15.1 / midi_data.estimate_tempo()
+	d = 15 / midi_data.estimate_tempo()
 	length = ceil(midi_data.get_end_time() / d)
 
 	if length < min_size:
@@ -55,10 +58,10 @@ def midi_to_matrix(file, min_size=1):
 	return M
 
 ''' write a matrix to a midi file'''
-def matrix_to_midi(matrix, file_name='output', output_path='./'):
+def matrix_to_midi(matrix, file_name='output', output_path='./', tempo=120):
 	instr = pretty_midi.Instrument(0, True, name='beat')
-	midi = pretty_midi.PrettyMIDI()
-	song = _matrix_to_notes(matrix)
+	midi = pretty_midi.PrettyMIDI(initial_tempo=tempo)
+	song = _matrix_to_notes(matrix, tempo)
 
 	instr.notes = song
 	midi.instruments = [instr]
@@ -67,13 +70,15 @@ def matrix_to_midi(matrix, file_name='output', output_path='./'):
 	if output_path[-1] != '/':
 		output_path += '/'
 
-	# midi.write(output_path + file_name + '.mid')
+	midi.write(output_path + file_name + '.mid')
 
 	print('[Midi Process][Output] Midi file for', file_name, 'to', output_path)
 
 ''' extract percussion and write it to a separate midi file'''
 def extract_percussion(file):
-	mat = midi_to_matrix(file, 1)
+	midi = pretty_midi.PrettyMIDI(file)
+	tempo = midi.estimate_tempo() // 2
+	mat = stream_to_matrix(midi, 1)
 	if not len(mat):
 		raise Exception("Song too short")
 	else:
@@ -86,11 +91,11 @@ PRIVATE METHODS
 
 """
 
-def _matrix_to_notes(matrix):
+def _matrix_to_notes(matrix, tempo=120):
 	matrix = np.concatenate((matrix, np.zeros((1, FEATURE_SIZE))), axis=0)
 
 	time_count = 0.0
-	step_size = 1 / float(16)
+	step_size = 15 / tempo
 	notes_on = {}
 	
 	notes = []
@@ -107,14 +112,13 @@ def _matrix_to_notes(matrix):
 		for i in list(notes_on.keys()):
 			# note ended
 			if not frame[i]:
-				new_note = pretty_midi.Note(50, i, time_count - notes_on[i], time_count)
+				new_note = pretty_midi.Note(50, i, time_count - notes_on[i] - step_size, time_count - step_size)
 				notes.append(new_note)
 
 				del notes_on[i]
 
 		time_count += step_size
 
-	print(notes)
 	return notes
 
 if __name__ == '__main__':
