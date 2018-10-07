@@ -18,9 +18,9 @@ def make_model(look_back):
 
 	model = Sequential()
 	model.add(LSTM(FEATURE_SIZE, return_sequences=True, input_shape=(look_back, FEATURE_SIZE)))
-	model.add(Dropout(0.1))
+	model.add(Dropout(0.3))
 	model.add(LSTM(FEATURE_SIZE * 2, return_sequences=True))
-	model.add(Dropout(0.1))
+	model.add(Dropout(0.3))
 	model.add(LSTM(FEATURE_SIZE))
 	model.add(Dense(FEATURE_SIZE))
 	model.add(Activation('sigmoid'))
