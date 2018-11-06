@@ -1,6 +1,9 @@
 # DeepBeats
 _DeepBeats_ is a deep LSTM trained on hundreds of MIDI files with a custom encoding scheme. Version 1.0 was made in 24 hours at the HackMIT hackathon. Since then, we have been updating and improving the project. 
 
+# Training Data
+https://mega.nz/#!ZxgAAIZB!oMYIyy7iLYtnpnwRsKOuVRttOVrAHdQ2-DqPil2s7Lc
+
 ## Encoding Scheme
 We use the pretty_midi library to convert each MIDI file into list of notes. With those notes, we construct a binary matrix _N_ x128 where _N_ is the length of the song in sixteenth notes, conversion = (length_in_seconds / (15 / tempo)). We then segment the matrix with a `look_back` parameter for training the LSTM on sequential data. Our preprocess step can be run with 
 
